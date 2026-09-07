@@ -17,7 +17,6 @@ function isCampsite(place) {
   return !excludeWords.some(word => name.includes(word));
 }
 
-
 function clearCampsiteMarkers() {
   campsiteMarkers.forEach(marker => {
     marker.setMap(null);
@@ -26,9 +25,7 @@ function clearCampsiteMarkers() {
   campsiteMarkers = [];
 }
 
-
 function searchCampsites(center) {
-
   if (!map) {
     console.error("Google Mapsがまだ初期化されていません");
     return;
@@ -46,11 +43,7 @@ function searchCampsites(center) {
 
   clearCampsiteMarkers();
 
-
-  console.log(
-    "キャンプ場を検索します:",
-    center
-  );
+  console.log("キャンプ場を検索します:", center);
 
   service.nearbySearch(
     {
@@ -66,12 +59,10 @@ function searchCampsites(center) {
         results
       );
 
-
       if (
         status !==
         google.maps.places.PlacesServiceStatus.OK
       ) {
-
         panel.classList.remove("hidden");
 
         panelContent.innerHTML = `
@@ -82,13 +73,11 @@ function searchCampsites(center) {
         return;
       }
 
-
       results.forEach(campsite => {
 
         if (!isCampsite(campsite)) {
           return;
         }
-
 
         if (
           !campsite.geometry ||
@@ -96,7 +85,6 @@ function searchCampsites(center) {
         ) {
           return;
         }
-
 
         const marker = new google.maps.Marker({
           position: campsite.geometry.location,
@@ -107,16 +95,12 @@ function searchCampsites(center) {
         campsiteMarkers.push(marker);
 
         marker.addListener("click", () => {
-
           openCampsiteDetails(
             campsite,
             service
           );
-
         });
-
       });
-
     }
   );
 }
@@ -136,30 +120,31 @@ function openCampsiteDetails(
       "campsite-content"
     );
 
-  const onsenPanel =
-    document.getElementById(
-      "onsen-panel"
-    );
-
-
   if (!panel || !panelContent) {
     return;
   }
-
 
   const searchContainer =
     document.querySelector(
       ".search-container"
     );
 
-  panel.classList.remove(
-    "hidden"
-  );
+  closeOnsenPanel();
+  closeCampsiteImagePanel();
 
+  panel.classList.remove("hidden");
 
   if (searchContainer) {
     searchContainer.classList.add(
       "campsite-open"
+    );
+
+    searchContainer.classList.remove(
+      "onsen-open"
+    );
+
+    searchContainer.classList.remove(
+      "campsite-image-open"
     );
   }
 
@@ -180,17 +165,14 @@ function openCampsiteDetails(
       return;
     }
 
-    const center =
-      map.getCenter();
+    const center = map.getCenter();
 
     google.maps.event.trigger(
       map,
       "resize"
     );
 
-    map.setCenter(
-      center
-    );
+    map.setCenter(center);
 
   }, 0);
 
@@ -228,7 +210,6 @@ function openCampsiteDetails(
         place,
         service
       );
-
     }
   );
 }
@@ -243,11 +224,9 @@ function searchNearbyOnsens(
       "campsite-content"
     );
 
-
   if (!panelContent) {
     return;
   }
-
 
   service.nearbySearch(
     {
@@ -262,7 +241,6 @@ function searchNearbyOnsens(
     (results, status) => {
 
       let onsenListHTML = "";
-
       let topThreeOnsens = [];
 
       if (
@@ -285,7 +263,6 @@ function searchNearbyOnsens(
               ...onsen,
               distance: distanceInMeters
             };
-
           });
 
         const sortedResults =
@@ -300,13 +277,11 @@ function searchNearbyOnsens(
             3
           );
 
+        onsenListHTML = `
+          <h2>付近の温泉施設情報</h2>
 
-        onsenListHTML =
-          `
-            <h2>付近の温泉施設情報</h2>
-            <div class="onsen-list">
-          `;
-
+          <div class="onsen-list">
+        `;
 
         topThreeOnsens.forEach(
           onsen => {
@@ -315,7 +290,6 @@ function searchNearbyOnsens(
               (
                 onsen.distance / 1000
               ).toFixed(1);
-
 
             onsenListHTML += `
               <div
@@ -347,20 +321,19 @@ function searchNearbyOnsens(
           }
         );
 
-
         onsenListHTML += `
-            </div>
+          </div>
         `;
 
       } else {
 
-        onsenListHTML =
-          `
-            <h2>付近の温泉施設情報</h2>
-            <p>
-              近くに温泉が見つかりませんでした
-            </p>
-          `;
+        onsenListHTML = `
+          <h2>付近の温泉施設情報</h2>
+
+          <p>
+            近くに温泉が見つかりませんでした
+          </p>
+        `;
       }
 
       panelContent.innerHTML = `
@@ -408,11 +381,23 @@ function searchNearbyOnsens(
             }
           </p>
 
+          <button
+            id="campsite-image-open-button"
+            type="button"
+            class="campsite-image-button"
+          >
+            キャンプ場の画像を見る
+          </button>
+
         </div>
 
         ${onsenListHTML}
 
       `;
+
+      setupCampsiteImageButton(
+        campsite
+      );
 
       if (
         topThreeOnsens.length > 0
@@ -422,11 +407,178 @@ function searchNearbyOnsens(
           topThreeOnsens,
           service
         );
-
       }
-
     }
   );
+}
+
+function setupCampsiteImageButton(
+  campsite
+) {
+
+  const button =
+    document.getElementById(
+      "campsite-image-open-button"
+    );
+
+  if (!button) {
+    return;
+  }
+
+  button.addEventListener(
+    "click",
+    () => {
+
+      console.log(
+        "キャンプ場画像パネルを開きます"
+      );
+
+      openCampsiteImagePanel(
+        campsite
+      );
+    }
+  );
+}
+
+function openCampsiteImagePanel(
+  campsite
+) {
+
+  const searchContainer =
+    document.querySelector(
+      ".search-container"
+    );
+
+  const imagePanel =
+    document.getElementById(
+      "campsite-image-panel"
+    );
+
+  const imageContent =
+    document.getElementById(
+      "campsite-image-content"
+    );
+
+  const closeButton =
+    document.getElementById(
+      "close-campsite-image-panel"
+    );
+
+  if (
+    !searchContainer ||
+    !imagePanel ||
+    !imageContent
+  ) {
+    console.error(
+      "キャンプ場画像パネルが見つかりません"
+    );
+
+    return;
+  }
+
+  closeOnsenPanel();
+
+  imagePanel.classList.remove(
+    "hidden"
+  );
+
+  searchContainer.classList.add(
+    "campsite-image-open"
+  );
+
+  searchContainer.classList.remove(
+    "onsen-open"
+  );
+
+
+  if (closeButton) {
+    closeButton.classList.remove(
+      "hidden"
+    );
+  }
+
+  imageContent.innerHTML = `
+
+    <h2>キャンプ場画像</h2>
+
+    <div class="campsite-image-placeholder">
+
+      <div class="campsite-image-placeholder-icon">
+        🏕️
+      </div>
+
+      <p>
+        ${campsite.name}
+      </p>
+
+      <p class="image-placeholder-text">
+        キャンプ場の画像を表示する予定です
+      </p>
+
+    </div>
+
+  `;
+
+  resizeMap();
+}
+
+function closeCampsiteImagePanel() {
+
+  const searchContainer =
+    document.querySelector(
+      ".search-container"
+    );
+
+  const imagePanel =
+    document.getElementById(
+      "campsite-image-panel"
+    );
+
+  const imageContent =
+    document.getElementById(
+      "campsite-image-content"
+    );
+
+  const closeButton =
+    document.getElementById(
+      "close-campsite-image-panel"
+    );
+
+
+  if (searchContainer) {
+
+    searchContainer.classList.remove(
+      "campsite-image-open"
+    );
+  }
+
+
+  if (imagePanel) {
+
+    imagePanel.classList.add(
+      "hidden"
+    );
+  }
+
+
+  if (closeButton) {
+
+    closeButton.classList.add(
+      "hidden"
+    );
+  }
+
+
+  if (imageContent) {
+
+    imageContent.innerHTML = `
+      <h2>キャンプ場画像</h2>
+      <p>画像を表示するにはボタンを押してください</p>
+    `;
+  }
+
+
+  resizeMap();
 }
 
 function setupOnsenClickEvents(
@@ -439,7 +591,6 @@ function setupOnsenClickEvents(
       ".onsen-item"
     );
 
-
   onsenItems.forEach(item => {
 
     item.addEventListener(
@@ -451,7 +602,6 @@ function setupOnsenClickEvents(
             "data-place-id"
           );
 
-
         const selectedOnsen =
           onsens.find(
             onsen =>
@@ -459,10 +609,10 @@ function setupOnsenClickEvents(
               placeId
           );
 
-
         if (!selectedOnsen) {
           return;
         }
+
 
         service.getDetails(
           {
@@ -507,12 +657,16 @@ function setupOnsenClickEvents(
                 "onsen-content"
               );
 
+
             if (
               !onsenPanel ||
               !onsenContent
             ) {
               return;
             }
+
+            closeCampsiteImagePanel();
+
 
             onsenPanel.classList.remove(
               "hidden"
@@ -525,7 +679,11 @@ function setupOnsenClickEvents(
                 "onsen-open"
               );
 
+              searchContainer.classList.remove(
+                "campsite-image-open"
+              );
             }
+
 
             const closeOnsenButton =
               document.getElementById(
@@ -538,8 +696,8 @@ function setupOnsenClickEvents(
               closeOnsenButton.classList.remove(
                 "hidden"
               );
-
             }
+
 
             setTimeout(() => {
 
@@ -555,11 +713,10 @@ function setupOnsenClickEvents(
                 "resize"
               );
 
-              map.setCenter(
-                center
-              );
+              map.setCenter(center);
 
             }, 0);
+
 
             onsenContent.innerHTML = `
 
@@ -611,13 +768,34 @@ function setupOnsenClickEvents(
               </div>
 
             `;
-
           }
         );
-
       }
     );
   });
+}
+
+function resizeMap() {
+
+  setTimeout(() => {
+
+    if (!map) {
+      return;
+    }
+
+    const center =
+      map.getCenter();
+
+    google.maps.event.trigger(
+      map,
+      "resize"
+    );
+
+    map.setCenter(
+      center
+    );
+
+  }, 0);
 }
 
 function initMap() {
@@ -648,6 +826,7 @@ function initMap() {
     return;
   }
 
+
   map =
     new google.maps.Map(
       mapElement,
@@ -656,6 +835,7 @@ function initMap() {
         center: center
       }
     );
+
 
   searchCampsites(
     center
@@ -703,6 +883,9 @@ function setupCloseButtons() {
             "onsen-open"
           );
 
+          searchContainer.classList.remove(
+            "campsite-image-open"
+          );
         }
 
 
@@ -717,7 +900,6 @@ function setupCloseButtons() {
           campsitePanel.classList.add(
             "hidden"
           );
-
         }
 
 
@@ -726,34 +908,8 @@ function setupCloseButtons() {
         );
 
 
-        const onsenPanel =
-          document.getElementById(
-            "onsen-panel"
-          );
-
-
-        if (onsenPanel) {
-
-          onsenPanel.classList.add(
-            "hidden"
-          );
-
-        }
-
-
-        const onsenCloseButton =
-          document.getElementById(
-            "close-onsen-panel"
-          );
-
-
-        if (onsenCloseButton) {
-
-          onsenCloseButton.classList.add(
-            "hidden"
-          );
-
-        }
+        closeOnsenPanel();
+        closeCampsiteImagePanel();
 
 
         const panelContent =
@@ -768,33 +924,12 @@ function setupCloseButtons() {
             <h2>キャンプ場情報</h2>
             <p>キャンプ場を選択してください</p>
           `;
-
         }
 
 
-        setTimeout(() => {
-
-          if (!map) {
-            return;
-          }
-
-          const center =
-            map.getCenter();
-
-          google.maps.event.trigger(
-            map,
-            "resize"
-          );
-
-          map.setCenter(
-            center
-          );
-
-        }, 0);
-
+        resizeMap();
       }
     );
-
   }
 
   const closeOnsenButton =
@@ -820,80 +955,93 @@ function setupCloseButtons() {
       "click",
       () => {
 
-        const searchContainer =
-          document.querySelector(
-            ".search-container"
-          );
-
-
-        if (searchContainer) {
-
-          searchContainer.classList.remove(
-            "onsen-open"
-          );
-
-        }
-
-
-        newCloseOnsenButton.classList.add(
-          "hidden"
-        );
-
-
-        const onsenPanel =
-          document.getElementById(
-            "onsen-panel"
-          );
-
-
-        if (onsenPanel) {
-
-          onsenPanel.classList.add(
-            "hidden"
-          );
-
-        }
-
-
-        const onsenContent =
-          document.getElementById(
-            "onsen-content"
-          );
-
-
-        if (onsenContent) {
-
-          onsenContent.innerHTML = `
-            <h2>温泉施設情報</h2>
-            <p>温泉を選択してください</p>
-          `;
-
-        }
-
-
-        setTimeout(() => {
-
-          if (!map) {
-            return;
-          }
-
-          const center =
-            map.getCenter();
-
-          google.maps.event.trigger(
-            map,
-            "resize"
-          );
-
-          map.setCenter(
-            center
-          );
-
-        }, 0);
-
+        closeOnsenPanel();
       }
     );
+  }
 
+  const closeImageButton =
+    document.getElementById(
+      "close-campsite-image-panel"
+    );
+
+
+  if (closeImageButton) {
+
+    closeImageButton.replaceWith(
+      closeImageButton.cloneNode(true)
+    );
+
+
+    const newCloseImageButton =
+      document.getElementById(
+        "close-campsite-image-panel"
+      );
+
+
+    newCloseImageButton.addEventListener(
+      "click",
+      () => {
+
+        closeCampsiteImagePanel();
+      }
+    );
+  }
+}
+
+function closeOnsenPanel() {
+
+  const searchContainer =
+    document.querySelector(
+      ".search-container"
+    );
+
+  const onsenPanel =
+    document.getElementById(
+      "onsen-panel"
+    );
+
+  const onsenContent =
+    document.getElementById(
+      "onsen-content"
+    );
+
+  const closeOnsenButton =
+    document.getElementById(
+      "close-onsen-panel"
+    );
+
+
+  if (searchContainer) {
+
+    searchContainer.classList.remove(
+      "onsen-open"
+    );
+  }
+
+
+  if (onsenPanel) {
+
+    onsenPanel.classList.add(
+      "hidden"
+    );
+  }
+
+
+  if (closeOnsenButton) {
+
+    closeOnsenButton.classList.add(
+      "hidden"
+    );
+  }
+
+
+  if (onsenContent) {
+
+    onsenContent.innerHTML = `
+      <h2>温泉施設情報</h2>
+      <p>温泉を選択してください</p>
+    `;
   }
 }
 
@@ -904,9 +1052,11 @@ function setupCurrentLocationButton() {
       "current-location-button"
     );
 
+
   if (!button) {
     return;
   }
+
 
   button.replaceWith(
     button.cloneNode(true)
@@ -927,6 +1077,7 @@ function setupCurrentLocationButton() {
         "GPSボタンがクリックされました"
       );
 
+
       if (!navigator.geolocation) {
 
         alert(
@@ -935,6 +1086,7 @@ function setupCurrentLocationButton() {
 
         return;
       }
+
 
       newButton.disabled = true;
 
@@ -975,6 +1127,7 @@ function setupCurrentLocationButton() {
             }
           );
 
+
           if (accuracy > 5000) {
 
             console.warn(
@@ -983,13 +1136,13 @@ function setupCurrentLocationButton() {
               )}km`
             );
 
+
             alert(
               `現在地の取得精度が低いため、正確な位置ではない可能性があります。\n` +
               `推定誤差：約${Math.round(
                 accuracy / 1000
               )}km`
             );
-
           }
 
 
@@ -1004,6 +1157,7 @@ function setupCurrentLocationButton() {
             return;
           }
 
+
           map.setCenter(
             currentLocation
           );
@@ -1013,12 +1167,12 @@ function setupCurrentLocationButton() {
             15
           );
 
+
           if (currentLocationMarker) {
 
             currentLocationMarker.setMap(
               null
             );
-
           }
 
 
@@ -1033,6 +1187,7 @@ function setupCurrentLocationButton() {
               title:
                 "現在地"
             });
+
 
           console.log(
             "現在地周辺のキャンプ場を再検索します"
@@ -1059,6 +1214,9 @@ function setupCurrentLocationButton() {
               "onsen-open"
             );
 
+            searchContainer.classList.remove(
+              "campsite-image-open"
+            );
           }
 
 
@@ -1073,7 +1231,6 @@ function setupCurrentLocationButton() {
             campsitePanel.classList.add(
               "hidden"
             );
-
           }
 
 
@@ -1088,7 +1245,20 @@ function setupCurrentLocationButton() {
             onsenPanel.classList.add(
               "hidden"
             );
+          }
 
+
+          const imagePanel =
+            document.getElementById(
+              "campsite-image-panel"
+            );
+
+
+          if (imagePanel) {
+
+            imagePanel.classList.add(
+              "hidden"
+            );
           }
 
 
@@ -1103,7 +1273,6 @@ function setupCurrentLocationButton() {
             closeCampsiteButton.classList.add(
               "hidden"
             );
-
           }
 
 
@@ -1118,12 +1287,26 @@ function setupCurrentLocationButton() {
             closeOnsenButton.classList.add(
               "hidden"
             );
-
           }
 
-          newButton.disabled = false;
 
+          const closeImageButton =
+            document.getElementById(
+              "close-campsite-image-panel"
+            );
+
+
+          if (closeImageButton) {
+
+            closeImageButton.classList.add(
+              "hidden"
+            );
+          }
+
+
+          newButton.disabled = false;
         },
+
 
         error => {
 
@@ -1161,7 +1344,6 @@ function setupCurrentLocationButton() {
                 "現在地の取得がタイムアウトしました。もう一度お試しください。";
 
               break;
-
           }
 
 
@@ -1171,17 +1353,15 @@ function setupCurrentLocationButton() {
 
 
           newButton.disabled = false;
-
         },
+
 
         {
           enableHighAccuracy: true,
           timeout: 10000,
           maximumAge: 0
         }
-
       );
-
     }
   );
 }
@@ -1209,46 +1389,42 @@ function setupMapPage() {
   } else {
 
     const checkGoogleMaps =
-      setInterval(() => {
+      setInterval(
+        () => {
 
-        if (
-          typeof google !== "undefined" &&
-          google.maps
-        ) {
+          if (
+            typeof google !== "undefined" &&
+            google.maps
+          ) {
 
-          clearInterval(
-            checkGoogleMaps
-          );
+            clearInterval(
+              checkGoogleMaps
+            );
 
-          initMap();
+            initMap();
+          }
 
-        }
-
-      }, 100);
-
+        },
+        100
+      );
   }
 
-  setupCloseButtons();
 
+  setupCloseButtons();
 
   setupCurrentLocationButton();
 }
 
-
 document.addEventListener(
   "turbo:load",
   () => {
-
     setupMapPage();
-
   }
 );
 
 document.addEventListener(
   "DOMContentLoaded",
   () => {
-
     setupMapPage();
-
   }
 );
