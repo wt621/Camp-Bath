@@ -3,31 +3,93 @@
 <% end %>
 
 <div class="search-container">
+
   <div id="campsite-panel" class="side-panel hidden">
-    <button id="close-campsite-panel" class="close-button hidden">×</button>
+
+    <button
+      id="close-campsite-panel"
+      class="close-button hidden"
+    >
+      ×
+    </button>
+
     <div id="campsite-content">
+
       <h2>キャンプ場情報</h2>
-      <p>キャンプ場を選択してください</p>
+
+      <p>
+        キャンプ場を選択してください
+      </p>
+
     </div>
   </div>
 
-<div id="map-container">
-  <div id="map"></div>
-  <button id="current-location-button" type="button">
-    ◎
-  </button>
-</div>
+  <div id="map-container">
+
+    <div id="map"></div>
+
+    <button
+      id="current-location-button"
+      type="button"
+    >
+      ◎
+    </button>
+
+  </div>
 
   <div id="onsen-panel" class="side-panel hidden">
-    <button id="close-onsen-panel" class="close-button hidden">×</button>
+
+    <button
+      id="close-onsen-panel"
+      class="close-button hidden"
+    >
+      ×
+    </button>
+
     <div id="onsen-content">
+
       <h2>温泉施設情報</h2>
-      <p>温泉を選択してください</p>
+
+      <p>
+        温泉を選択してください
+      </p>
+
     </div>
   </div>
+
+  <div
+    id="campsite-image-panel"
+    class="side-panel hidden"
+  >
+
+    <button
+      id="close-campsite-image-panel"
+      class="close-button hidden"
+    >
+      ×
+    </button>
+
+    <div id="campsite-image-content">
+
+      <h2>キャンプ場画像</h2>
+
+      <p>
+        画像を表示するにはボタンを押してください
+      </p>
+
+    </div>
+
+  </div>
+
 </div>
 
+
 <script>
+
   // Railsから緯度・経度を受け取る
-  window.searchCenter = { lat: <%= @latitude %>, lng: <%= @longitude %> };
+  window.searchCenter = {
+    lat: <%= @latitude %>,
+    lng: <%= @longitude %>
+  };
+
 </script>
