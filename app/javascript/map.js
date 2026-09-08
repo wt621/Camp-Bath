@@ -43,7 +43,6 @@ function searchCampsites(center) {
 
   clearCampsiteMarkers();
 
-  console.log("キャンプ場を検索します:", center);
 
   service.nearbySearch(
     {
@@ -52,12 +51,6 @@ function searchCampsites(center) {
       type: "campground"
     },
     (results, status) => {
-
-      console.log(
-        "キャンプ場検索結果:",
-        status,
-        results
-      );
 
       if (
         status !==
@@ -185,7 +178,9 @@ function openCampsiteDetails(
         "formatted_address",
         "opening_hours",
         "website",
-        "geometry"
+        "geometry",
+        "photos",
+        "place_id"
       ]
     },
 
@@ -429,10 +424,6 @@ function setupCampsiteImageButton(
     "click",
     () => {
 
-      console.log(
-        "キャンプ場画像パネルを開きます"
-      );
-
       openCampsiteImagePanel(
         campsite
       );
@@ -440,10 +431,7 @@ function setupCampsiteImageButton(
   );
 }
 
-function openCampsiteImagePanel(
-  campsite
-) {
-
+function openCampsiteImagePanel(campsite) {
   const searchContainer =
     document.querySelector(
       ".search-container"
@@ -490,7 +478,6 @@ function openCampsiteImagePanel(
     "onsen-open"
   );
 
-
   if (closeButton) {
     closeButton.classList.remove(
       "hidden"
@@ -498,28 +485,150 @@ function openCampsiteImagePanel(
   }
 
   imageContent.innerHTML = `
-
     <h2>キャンプ場画像</h2>
 
-    <div class="campsite-image-placeholder">
-
-      <div class="campsite-image-placeholder-icon">
-        🏕️
-      </div>
-
-      <p>
-        ${campsite.name}
-      </p>
-
-      <p class="image-placeholder-text">
-        キャンプ場の画像を表示する予定です
-      </p>
-
+    <div class="campsite-image-loading">
+      <p>画像を読み込んでいます...</p>
     </div>
-
   `;
 
   resizeMap();
+
+  if (
+    typeof google === "undefined" ||
+    !google.maps ||
+    !google.maps.places
+  ) {
+    console.error(
+      "Google Maps Places APIが利用できません"
+    );
+
+    imageContent.innerHTML = `
+      <h2>キャンプ場画像</h2>
+
+      <p>
+        画像を取得できませんでした。
+      </p>
+    `;
+
+    return;
+  }
+
+  const service =
+    new google.maps.places.PlacesService(
+      map
+    );
+
+  service.getDetails(
+    {
+      placeId: campsite.place_id,
+
+      fields: [
+        "name",
+        "photos"
+      ]
+    },
+
+    (place, status) => {
+      if (
+        status !==
+          google.maps.places.PlacesServiceStatus.OK ||
+        !place
+      ) {
+        console.error(
+          "キャンプ場の画像情報を取得できませんでした:",
+          status
+        );
+
+        imageContent.innerHTML = `
+          <h2>キャンプ場画像</h2>
+
+          <div class="campsite-image-placeholder">
+            <div class="campsite-image-placeholder-icon">
+              🏕️
+            </div>
+
+            <p>
+              ${campsite.name}
+            </p>
+
+            <p class="image-placeholder-text">
+              画像を取得できませんでした
+            </p>
+          </div>
+        `;
+
+        return;
+      }
+
+      if (
+        !place.photos ||
+        place.photos.length === 0
+      ) {
+        imageContent.innerHTML = `
+          <h2>キャンプ場画像</h2>
+
+          <div class="campsite-image-placeholder">
+            <div class="campsite-image-placeholder-icon">
+              🏕️
+            </div>
+
+            <p>
+              ${place.name || campsite.name}
+            </p>
+
+            <p class="image-placeholder-text">
+              このキャンプ場の画像はありません
+            </p>
+          </div>
+        `;
+
+        return;
+      }
+
+      const photo =
+        place.photos[0];
+
+      const imageUrl =
+        photo.getUrl({
+          maxWidth: 800,
+          maxHeight: 600
+        });
+
+      let attributionHTML = "";
+
+      if (
+        photo.html_attributions &&
+        photo.html_attributions.length > 0
+      ) {
+        attributionHTML = `
+          <div class="campsite-image-attribution">
+            ${photo.html_attributions.join(" ")}
+          </div>
+        `;
+      }
+
+      imageContent.innerHTML = `
+        <h2>キャンプ場画像</h2>
+
+        <div class="campsite-image-container">
+
+          <img
+            src="${imageUrl}"
+            alt="${place.name || campsite.name}"
+            class="campsite-image"
+          >
+
+          <p class="campsite-image-name">
+            ${place.name || campsite.name}
+          </p>
+
+          ${attributionHTML}
+
+        </div>
+      `;
+    }
+  );
 }
 
 function closeCampsiteImagePanel() {
@@ -623,7 +732,8 @@ function setupOnsenClickEvents(
               "name",
               "formatted_address",
               "opening_hours",
-              "website"
+              "website",
+              "photos"
             ]
           },
 
@@ -1073,11 +1183,6 @@ function setupCurrentLocationButton() {
     "click",
     () => {
 
-      console.log(
-        "GPSボタンがクリックされました"
-      );
-
-
       if (!navigator.geolocation) {
 
         alert(
@@ -1089,13 +1194,7 @@ function setupCurrentLocationButton() {
 
 
       newButton.disabled = true;
-
-
-      console.log(
-        "現在地を取得します"
-      );
-
-
+      
       navigator.geolocation.getCurrentPosition(
 
         position => {
@@ -1111,22 +1210,6 @@ function setupCurrentLocationButton() {
 
           const accuracy =
             position.coords.accuracy;
-
-
-          console.log(
-            "現在地取得成功:",
-            {
-              latitude:
-                currentLocation.lat,
-
-              longitude:
-                currentLocation.lng,
-
-              accuracy:
-                accuracy
-            }
-          );
-
 
           if (accuracy > 5000) {
 
@@ -1187,12 +1270,6 @@ function setupCurrentLocationButton() {
               title:
                 "現在地"
             });
-
-
-          console.log(
-            "現在地周辺のキャンプ場を再検索します"
-          );
-
 
           searchCampsites(
             currentLocation
