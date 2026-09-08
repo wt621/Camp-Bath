@@ -124,6 +124,7 @@ function openCampsiteDetails(
 
   closeOnsenPanel();
   closeCampsiteImagePanel();
+  closeWeatherPanel();
 
   panel.classList.remove("hidden");
 
@@ -384,6 +385,14 @@ function searchNearbyOnsens(
             キャンプ場の画像を見る
           </button>
 
+          <button
+            id="weather-open-button"
+            type="button"
+            class="campsite-image-button"
+          >
+            キャンプ場の天気を見る
+          </button>
+
         </div>
 
         ${onsenListHTML}
@@ -391,6 +400,10 @@ function searchNearbyOnsens(
       `;
 
       setupCampsiteImageButton(
+        campsite
+      );
+
+      setupWeatherButton(
         campsite
       );
 
@@ -465,6 +478,7 @@ function openCampsiteImagePanel(campsite) {
   }
 
   closeOnsenPanel();
+  closeWeatherPanel();
 
   imagePanel.classList.remove(
     "hidden"
@@ -631,6 +645,121 @@ function openCampsiteImagePanel(campsite) {
   );
 }
 
+function setupWeatherButton(campsite) {
+
+  const button =
+    document.getElementById(
+      "weather-open-button"
+    );
+
+  if (!button) {
+    return;
+  }
+
+  button.addEventListener(
+    "click",
+    () => {
+
+      openWeatherPanel(
+        campsite
+      );
+
+    }
+  );
+}
+
+
+function openWeatherPanel(campsite) {
+
+  const searchContainer =
+    document.querySelector(
+      ".search-container"
+    );
+
+  const weatherPanel =
+    document.getElementById(
+      "weather-panel"
+    );
+
+  const weatherContent =
+    document.getElementById(
+      "weather-content"
+    );
+
+  const closeButton =
+    document.getElementById(
+      "close-weather-panel"
+    );
+
+  if (
+    !searchContainer ||
+    !weatherPanel ||
+    !weatherContent
+  ) {
+
+    console.error(
+      "天気パネルが見つかりません"
+    );
+
+    return;
+  }
+
+  closeOnsenPanel();
+  closeCampsiteImagePanel();
+  closeWeatherPanel();
+
+  weatherPanel.classList.remove(
+    "hidden"
+  );
+
+  searchContainer.classList.add(
+    "weather-open"
+  );
+
+  searchContainer.classList.remove(
+    "onsen-open"
+  );
+
+  searchContainer.classList.remove(
+    "campsite-image-open"
+  );
+
+  if (closeButton) {
+
+    closeButton.classList.remove(
+      "hidden"
+    );
+
+  }
+
+  weatherContent.innerHTML = `
+
+    <h2>
+      キャンプ場の天気
+    </h2>
+
+    <div class="detail-box">
+
+      <h3>
+        ${campsite.name}
+      </h3>
+
+      <p>
+        天気予報を表示する準備中です。
+      </p>
+
+      <p>
+        今後、Open-Meteoなどの
+        天気予報APIと接続します。
+      </p>
+
+    </div>
+
+  `;
+
+  resizeMap();
+}
+
 function closeCampsiteImagePanel() {
 
   const searchContainer =
@@ -686,6 +815,72 @@ function closeCampsiteImagePanel() {
     `;
   }
 
+
+  resizeMap();
+}
+
+function closeWeatherPanel() {
+
+  const searchContainer =
+    document.querySelector(
+      ".search-container"
+    );
+
+  const weatherPanel =
+    document.getElementById(
+      "weather-panel"
+    );
+
+  const weatherContent =
+    document.getElementById(
+      "weather-content"
+    );
+
+  const closeButton =
+    document.getElementById(
+      "close-weather-panel"
+    );
+
+  if (searchContainer) {
+
+    searchContainer.classList.remove(
+      "weather-open"
+    );
+
+  }
+
+  if (weatherPanel) {
+
+    weatherPanel.classList.add(
+      "hidden"
+    );
+
+  }
+
+  if (closeButton) {
+
+    closeButton.classList.add(
+      "hidden"
+    );
+
+  }
+
+  if (weatherContent) {
+
+    weatherContent.innerHTML = `
+
+      <h2>
+        キャンプ場の天気
+      </h2>
+
+      <p>
+        天気予報を表示するには
+        ボタンを押してください
+      </p>
+
+    `;
+
+  }
 
   resizeMap();
 }
@@ -776,6 +971,7 @@ function setupOnsenClickEvents(
             }
 
             closeCampsiteImagePanel();
+            closeWeatherPanel();
 
 
             onsenPanel.classList.remove(
@@ -1020,6 +1216,7 @@ function setupCloseButtons() {
 
         closeOnsenPanel();
         closeCampsiteImagePanel();
+        closeWeatherPanel();
 
 
         const panelContent =
@@ -1066,6 +1263,7 @@ function setupCloseButtons() {
       () => {
 
         closeOnsenPanel();
+        closeWeatherPanel();
       }
     );
   }
@@ -1094,8 +1292,33 @@ function setupCloseButtons() {
       () => {
 
         closeCampsiteImagePanel();
+        closeWeatherPanel();
       }
     );
+    const closeWeatherButton =
+      document.getElementById(
+        "close-weather-panel"
+      );
+
+    if (closeWeatherButton) {
+
+      closeWeatherButton.replaceWith(
+        closeWeatherButton.cloneNode(true)
+      );
+
+      const newCloseWeatherButton =
+        document.getElementById(
+          "close-weather-panel"
+        );
+
+      newCloseWeatherButton.addEventListener(
+        "click",
+        () => {
+
+          closeWeatherPanel();
+        }
+      );
+    }
   }
 }
 
@@ -1294,6 +1517,10 @@ function setupCurrentLocationButton() {
             searchContainer.classList.remove(
               "campsite-image-open"
             );
+
+            searchContainer.classList.remove(
+              "weather-open"
+            );
           }
 
 
@@ -1338,6 +1565,17 @@ function setupCurrentLocationButton() {
             );
           }
 
+          const weatherPanel =
+            document.getElementById(
+              "weather-panel"
+            );
+
+          if (weatherPanel) {
+
+            weatherPanel.classList.add(
+              "hidden"
+            );
+          }
 
           const closeCampsiteButton =
             document.getElementById(
@@ -1380,6 +1618,17 @@ function setupCurrentLocationButton() {
             );
           }
 
+          const closeWeatherButton =
+            document.getElementById(
+              "close-weather-panel"
+            );
+
+          if (closeWeatherButton) {
+
+            closeWeatherButton.classList.add(
+              "hidden"
+            );
+          }
 
           newButton.disabled = false;
         },
