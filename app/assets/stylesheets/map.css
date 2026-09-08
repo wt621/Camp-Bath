@@ -69,7 +69,7 @@
 
 #campsite-image-panel {
   border-left: 1px solid #ccc;
-  background-color: #eeeeee;
+  background-color: #b8f0c057;
   position: relative;
 }
 
@@ -145,6 +145,35 @@
   cursor: pointer;
 
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.campsite-image-container {
+  width: 100%;
+  text-align: center;
+}
+
+.campsite-image {
+  display: block;
+  width: 100%;
+  max-height: 500px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.campsite-image-name {
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.campsite-image-attribution {
+  margin-top: 8px;
+  font-size: 12px;
+  text-align: left;
+}
+
+.campsite-image-loading {
+  text-align: center;
+  padding: 30px 10px;
 }
 
 @media (max-width: 768px) {
