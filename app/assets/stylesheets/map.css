@@ -176,6 +176,66 @@
   padding: 30px 10px;
 }
 
+#weather-panel {
+  border-left: 1px solid #ccc;
+  background-color: #a2cff057;
+  position: relative;
+}
+
+.search-container.campsite-open.weather-open #map-container {
+  width: 40%;
+  flex: 0 0 40%;
+}
+
+.search-container.campsite-open.weather-open #campsite-panel,
+.search-container.campsite-open.weather-open #weather-panel {
+  width: 30%;
+  flex: 0 0 30%;
+}
+
+#close-weather-panel {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 10;
+}
+
+@media (max-width: 768px) {
+
+  #weather-panel {
+    order: 5;
+    width: 100%;
+    height: 70vh;
+    overflow-y: auto;
+  }
+
+  .search-container.campsite-open.weather-open #map-container {
+    width: 100%;
+    height: 30vh;
+    flex: none;
+  }
+
+  .search-container.campsite-open.weather-open #campsite-panel {
+    width: 100%;
+    height: 70vh;
+  }
+
+  .search-container.campsite-open.weather-open #weather-panel {
+    width: 100%;
+    height: 70vh;
+  }
+
+  #close-weather-panel {
+    font-size: 32px;
+    padding: 10px;
+    z-index: 10;
+  }
+}
+
 @media (max-width: 768px) {
 
   .search-container {
