@@ -47,4 +47,23 @@ RSpec.describe 'UserSessions', type: :system do
       end
     end
   end
+
+  describe 'ログアウト' do
+    before do
+      visit new_user_session_path
+
+      fill_in 'Eメール', with: user.email
+      fill_in 'パスワード', with: password
+
+      click_button 'ログイン'
+    end
+
+    it 'ログアウト処理が成功する' do
+      logout_link = find('a', text: 'ログアウト', visible: false)
+      page.execute_script('arguments[0].click();', logout_link)
+
+      expect(page).to have_current_path(root_path)
+      expect(page).not_to have_link('ログアウト', visible: false)
+    end
+  end
 end
