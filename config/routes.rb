@@ -6,6 +6,7 @@ Rails.application.routes.draw do
 
   get "search/areas", to: "search#areas", as: :search_areas
   get "search", to: "search#index", as: :search
+  get "routes/calculate", to: "routes#calculate"
   devise_for :users, skip: [ :passwords ], controllers: {
     registrations: "users/registrations"
   }
