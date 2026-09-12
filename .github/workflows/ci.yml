@@ -49,6 +49,59 @@ jobs:
           bin/rails db:create
           bin/rails db:schema:load
 
+      - name: Diagnose test environment
+        run: |
+          echo "===== ENV ====="
+          echo "CI=$CI"
+          echo "RAILS_ENV=$RAILS_ENV"
+          echo "DATABASE_URL is set: ${DATABASE_URL:+yes}"
+
+          echo ""
+          echo "===== Ruby ====="
+          ruby -v
+          bundle -v
+
+          echo ""
+          echo "===== Rails ====="
+          bin/rails -v
+
+          echo ""
+          echo "===== Chrome ====="
+          which google-chrome || true
+          google-chrome --version || true
+          which chromium || true
+          chromium --version || true
+
+          echo ""
+          echo "===== ChromeDriver ====="
+          which chromedriver || true
+          chromedriver --version || true
+
+          echo ""
+          echo "===== Network ====="
+          hostname
+          hostname -I || true
+          ip addr || true
+
+          echo ""
+          echo "===== Port 4444 ====="
+          ss -ltnp | grep ':4444' || true
+
+          echo ""
+          echo "===== Chrome processes ====="
+          ps aux | grep -E 'chrome|chromedriver' | grep -v grep || true
+
+          echo ""
+          echo "===== Listening ports ====="
+          ss -ltnp || true
+
+          echo ""
+          echo "===== Selenium / Capybara configuration ====="
+          sed -n '1,120p' spec/support/capybara.rb
+
+          echo ""
+          sed -n '70,95p' spec/rails_helper.rb
+
       - name: Run RSpec
         run: bundle exec rspec --order random
 
