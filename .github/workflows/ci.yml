@@ -100,7 +100,7 @@ jobs:
           sed -n '1,120p' spec/support/capybara.rb
 
           echo ""
-          sed -n '70,95p' spec/rails_helper.rb====="
+          sed -n '70,95p' spec/rails_helper.rb
 
       - name: Run RSpec
         run: bundle exec rspec --order random
