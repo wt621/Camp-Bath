@@ -14,6 +14,10 @@ RSpec.describe 'UserSessions', type: :system do
 
         click_button 'ログイン'
 
+        puts "===== LOGIN DEBUG ====="
+        puts "URL: #{page.current_url}"
+        puts page.html
+
         expect(page).to have_current_path(root_path)
         expect(page).to have_link('ログアウト', visible: false)
       end
