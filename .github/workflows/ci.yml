@@ -49,6 +49,56 @@ jobs:
           bin/rails db:create
           bin/rails db:schema:load
 
+      - name: Diagnose test environment
+        run: |
+          echo "===== ENV ====="
+          echo "CI=$CI"
+          echo "RAILS_ENV=$RAILS_ENV"
+          echo "DATABASE_URL is set: ${DATABASE_URL:+yes}"
+
+          echo ""
+          echo "===== Ruby ====="
+          ruby -v
+          bundle -v
+
+          echo ""
+          echo "===== Rails ====="
+          bin/rails -v
+
+          echo ""
+          echo "===== Chrome ====="
+          which google-chrome || true
+          google-chrome --version || true
+          which chromium || true
+          chromium --version || true
+
+          echo ""
+          echo "===== ChromeDriver ====="
+          which chromedriver || true
+          chromedriver --version || true
+
+          echo ""
+          echo "===== Network ====="
+          hostname
+          hostname -I || true
+          ip addr || true
+
+          echo ""
+          echo "===== Port 4444 ====="
+          ss -ltnp | grep ':4444' || true
+
+          echo ""
+          echo "===== Capybara configuration ====="
+          bundle exec ruby -e '
+            require "./spec/rails_helper"
+            puts "CI=#{ENV["CI"]}"
+            puts "Capybara.server_host=#{Capybara.server_host.inspect}"
+            puts "Capybara.server_port=#{Capybara.server_port.inspect}"
+            puts "Capybara.app_host=#{Capybara.app_host.inspect}"
+            puts "Capybara.default_driver=#{Capybara.default_driver.inspect}"
+            puts "Capybara.javascript_driver=#{Capybara.javascript_driver.inspect}"
+          '
+
       - name: Run RSpec
         run: bundle exec rspec --order random
 
