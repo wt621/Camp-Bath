@@ -88,16 +88,19 @@ jobs:
           ss -ltnp | grep ':4444' || true
 
           echo ""
-          echo "===== Capybara configuration ====="
-          bundle exec ruby -e '
-            require "./spec/rails_helper"
-            puts "CI=#{ENV["CI"]}"
-            puts "Capybara.server_host=#{Capybara.server_host.inspect}"
-            puts "Capybara.server_port=#{Capybara.server_port.inspect}"
-            puts "Capybara.app_host=#{Capybara.app_host.inspect}"
-            puts "Capybara.default_driver=#{Capybara.default_driver.inspect}"
-            puts "Capybara.javascript_driver=#{Capybara.javascript_driver.inspect}"
-          '
+          echo "===== Chrome processes ====="
+          ps aux | grep -E 'chrome|chromedriver' | grep -v grep || true
+
+          echo ""
+          echo "===== Listening ports ====="
+          ss -ltnp || true
+
+          echo ""
+          echo "===== Selenium / Capybara configuration ====="
+          sed -n '1,120p' spec/support/capybara.rb
+
+          echo ""
+          sed -n '70,95p' spec/rails_helper.rb====="
 
       - name: Run RSpec
         run: bundle exec rspec --order random
